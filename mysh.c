@@ -3,6 +3,7 @@ Patrick Burns
 September 26, 2022
 Class: CS 390
 Assignment: Program 1
+Program: My Shell
 */
 
 #include "stdio.h"
@@ -76,6 +77,7 @@ int main()
 		else
 		{
 			printf("Invalid command.\n");
+			//USAGE MESSAGE
 		}
 		
 	} while (1);
