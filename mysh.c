@@ -10,15 +10,19 @@ Program: My Shell
 #include "stdlib.h"
 #include "string.h"
 #include "stdbool.h"
+#define MAX_TOKENS 32
+#define MAX_TOKEN_LENGTH 256
 
 /* Function Prototypes */
-void command_echo(char userInput[1024]);
-void command_ps1(char userInput[1024]);
-void command_cat(char userInput[1024]);
-void command_cp(char userInput[1024]);
-void command_rm(char userInput[1024]);
-void command_mkdir(char userInput[1024]);
-void command_rmdir(char userInput[1024]);
+void command_echo(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int numTokens);
+void command_ps1(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int numTokens);
+void command_cat(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int numTokens);
+void command_cp(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int numTokens);
+void command_rm(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int numTokens);
+void command_mkdir(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int numTokens);
+void command_rmdir(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int numTokens);
+
+
 
 /* Global Variable */
 char ps1[1024] = "$";
@@ -26,49 +30,77 @@ char ps1[1024] = "$";
 
 int main()
 {
-	int x = 0;
 	char userInput[1024];
 	char command[128];
+	char* token;
+	char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH];
+	int numTokens = 0;
+	int i = 0;
+
 	
 	printf("\n");
 
 
 	do
 	{
+		/* reset tokens back to zero for next input */
+		numTokens = 0;
+		
+		/* print out the ps1 variable and get user input */
 		printf("%s ", ps1);
 		fgets(userInput, 1024, stdin);
+
+
+		/* tokenize and store input into tokens array */
+		token = strtok(userInput, " ");
+		while(token != NULL)
+		{
+			strcpy(tokens[numTokens++], token);
+			token = strtok(NULL, " ");
+		}
+
+		/* Replace the newline character in the last token with a 0 */
+		for(i = 0;;i++)
+		{
+			if(tokens[numTokens-1][i] == '\n')
+			{
+				tokens[numTokens-1][i] = 0;
+				break;
+			}
+		}
+
+
+
 		
-
-
-		if (strncmp(userInput, "echo ", 5) == 0)
+		if (strcmp(tokens[0], "echo") == 0)
 		{
-			command_echo(userInput);
+			command_echo(tokens, numTokens);
 		}
-		else if ((strncmp(userInput, "ps1 ", 4) == 0) || (strncmp(userInput, "PS1 ", 4) == 0))
+		else if ((strcmp(tokens[0], "ps1") == 0) || (strcmp(tokens[0], "PS1") == 0)) /* allow user to use "ps1" or "PS1" */
 		{
-			command_ps1(userInput);
+			command_ps1(tokens, numTokens);
 		}
-		else if (strncmp(userInput, "cat ", 4) == 0)
+		else if (strcmp(tokens[0], "cat") == 0)
 		{
-			command_cat(userInput);
+			command_cat(tokens, numTokens);
 		}
-		else if (strncmp(userInput, "cp ", 3) == 0)
+		else if (strcmp(tokens[0], "cp") == 0)
 		{
-			printf("command cp entered\n");
+			command_cp(tokens, numTokens);
 		}
-		else if (strncmp(userInput, "rm ", 3) == 0)
+		else if (strcmp(tokens[0], "rm") == 0)
 		{
-			printf("command rm entered\n");
+			command_rm(tokens, numTokens);
 		}
-		else if (strncmp(userInput, "mkdir ", 6) == 0)
+		else if (strcmp(tokens[0], "mkdir") == 0)
 		{
-			printf("command mkdir entered\n");
+			command_mkdir(tokens, numTokens);
 		}
-		else if (strncmp(userInput, "rmdir ", 6) == 0)
+		else if (strcmp(tokens[0], "rmdir") == 0)
 		{
-			printf("command rmdir entered\n");
+			command_rmdir(tokens, numTokens);
 		}
-		else if ((strncmp(userInput, "exit", 4) == 0) || strncmp(userInput, "exit ", 5) == 0)
+		else if (strcmp(tokens[0], "exit") == 0)
 		{
 			break;
 		}
@@ -84,37 +116,18 @@ int main()
 }
 
 /* Function handles the echo command */
-void command_echo(char userInput[1024])
+void command_echo(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int numTokens)
 {
 	bool nArg = false; /* used to determine whether to apply -n */
-	char* token; /* used during tokenization */
-	int numTokens = 0;
 	int i = 0; /* declared here since using -ansi disallows var declarations inside for loops */
-	char tokens[128][256];
-			
-	/* tokenizes and stores input into tokens array */
-	token = strtok(userInput, " ");
-	while(token != NULL)
-	{
-		if((strcmp(token, "-n") == 0) && (numTokens == 1)) /* Checks if -n found immediately after "echo" in the command*/
-		{
-			nArg = true;
-		}
-		strcpy(tokens[numTokens++], token);
-		token = strtok(NULL," ");
-	}
 	
-	/* Replace the newline character in the last token with a 0 */
-	for(i = 0;;i++)
+	/* test for -n flag right after the "echo" token */
+	if(strcmp(tokens[1], "-n") == 0)
 	{
-		if(tokens[numTokens-1][i] == '\n')
-		{
-			tokens[numTokens-1][i] = 0;
-			break;
-		}
+		nArg = true;
 	}
 
-	/* Print out the message. If -n was found, skip printing it */
+	/* Print out the message. If "-n" was found as the token immediately after "echo", skip printing it in the output */
 	if(nArg)
 	{
 		for(i = 2; i < numTokens; i++)
@@ -130,6 +143,7 @@ void command_echo(char userInput[1024])
 		}
 	}
 	
+	/* only print a new line if the -n flag wasn't found */
 	if(!nArg)
 	{
 		printf("\n");
@@ -137,30 +151,11 @@ void command_echo(char userInput[1024])
 }
 
 /* Function handles the PS1 command */
-void command_ps1(char userInput[1024])
+void command_ps1(char tokens[128][256], int numTokens)
 {
-	char* token; /* used during tokenization */
-	char tokens[128][256];
 	char newPs1[1024] = "";
-	int numTokens = 0;
+	
 	int i = 0;  /* declared here since using -ansi disallows var declarations inside for loops */
-
-	token = strtok(userInput, " ");
-	while(token != NULL)
-	{
-		strcpy(tokens[numTokens++], token);
-		token = strtok(NULL," ");
-	}
-
-	/* Replace the newline character in the last token with a 0 */
-	for(i = 0;;i++)
-	{
-		if(tokens[numTokens-1][i] == '\n')
-		{
-			tokens[numTokens-1][i] = 0;
-			break;
-		}
-	}
 
 	/* concatenate each token to the newPs1 string */
 	for(i = 1; i<numTokens;i++)
@@ -178,31 +173,11 @@ void command_ps1(char userInput[1024])
 }
 
 /* Function handles the cat command */
-void command_cat(char userInput[1024])
+void command_cat(char tokens[128][256], int numTokens)
 {
-	char* token;
-	char tokens[128][256];
-	int numTokens = 0;
 	int i = 0;
 	FILE *inputFile;
 	char c = '0';
-
-	token = strtok(userInput, " ");
-	while(token != NULL)
-	{
-		strcpy(tokens[numTokens++], token);
-		token = strtok(NULL," ");
-	}
-
-	/* Replace the newline character in the last token with a 0 */
-	for(i = 0;;i++)
-	{
-		if(tokens[numTokens-1][i] == '\n')
-		{
-			tokens[numTokens-1][i] = 0;
-			break;
-		}
-	}
 
 	if ((inputFile = fopen(tokens[1], "r")) == NULL)
 	{
@@ -218,110 +193,29 @@ void command_cat(char userInput[1024])
 	}
 
 
-
 	fclose(inputFile);
 }
 
 /* Function handles the cp command */
-void command_cp(char userInput[1024])
+void command_cp(char tokens[128][256], int numTokens)
 {
-	char* token;
-	char tokens[128][256];
-	int numTokens = 0;
-	int i = 0;
-
-	token = strtok(userInput, " ");
-	while(token != NULL)
-	{
-		strcpy(tokens[numTokens++], token);
-		token = strtok(NULL," ");
-	}
-
-	/* Replace the newline character in the last token with a 0 */
-	for(i = 0;;i++)
-	{
-		if(tokens[numTokens-1][i] == '\n')
-		{
-			tokens[numTokens-1][i] = 0;
-			break;
-		}
-	}
+	printf("command cp entered\n");
 }
 
 /* Function handles the rm command */
-void command_rm(char userInput[1024])
+void command_rm(char tokens[128][256], int numTokens)
 {
-	char* token;
-	char tokens[128][256];
-	int numTokens = 0;
-	int i = 0;
-
-	token = strtok(userInput, " ");
-	while(token != NULL)
-	{
-		strcpy(tokens[numTokens++], token);
-		token = strtok(NULL," ");
-	}
-
-	/* Replace the newline character in the last token with a 0 */
-	for(i = 0;;i++)
-	{
-		if(tokens[numTokens-1][i] == '\n')
-		{
-			tokens[numTokens-1][i] = 0;
-			break;
-		}
-	}
+	printf("command rm entered\n");
 }
 
 /* Function handles the mkdir command */
-void command_mkdir(char userInput[1024])
+void command_mkdir(char tokens[128][256], int numTokens)
 {
-	char* token;
-	char tokens[128][256];
-	int numTokens = 0;
-	int i = 0;
-
-	token = strtok(userInput, " ");
-	while(token != NULL)
-	{
-		strcpy(tokens[numTokens++], token);
-		token = strtok(NULL," ");
-	}
-
-	/* Replace the newline character in the last token with a 0 */
-	for(i = 0;;i++)
-	{
-		if(tokens[numTokens-1][i] == '\n')
-		{
-			tokens[numTokens-1][i] = 0;
-			break;
-		}
-	}
+	printf("command mkdir entered\n");
 }
 
 /* Function handles the rmdir command */
-void command_rmdir(char userInput[1024])
+void command_rmdir(char tokens[128][256], int numTokens)
 {
-	char* token;
-	char tokens[128][256];
-	int numTokens = 0;
-	int i = 0;
-
-	token = strtok(userInput, " ");
-	while(token != NULL)
-	{
-		strcpy(tokens[numTokens++], token);
-		token = strtok(NULL," ");
-	}
-
-	/* Replace the newline character in the last token with a 0 */
-	for(i = 0;;i++)
-	{
-		if(tokens[numTokens-1][i] == '\n')
-		{
-			tokens[numTokens-1][i] = 0;
-			break;
-		}
-	}
+	printf("command rmdir entered\n");
 }
