@@ -50,7 +50,7 @@ int main()
 		}
 		else if (strncmp(userInput, "cat ", 4) == 0)
 		{
-			printf("command cat entered\n");
+			command_cat(userInput);
 		}
 		else if (strncmp(userInput, "cp ", 3) == 0)
 		{
@@ -182,8 +182,10 @@ void command_cat(char userInput[1024])
 {
 	char* token;
 	char tokens[128][256];
-	int numTokens;
+	int numTokens = 0;
 	int i = 0;
+	FILE *inputFile;
+	char c = '0';
 
 	token = strtok(userInput, " ");
 	while(token != NULL)
@@ -201,6 +203,23 @@ void command_cat(char userInput[1024])
 			break;
 		}
 	}
+
+	if ((inputFile = fopen(tokens[1], "r")) == NULL)
+	{
+		printf("File %s not found\n", tokens[1]);
+		return;
+	}
+
+	c = fgetc(inputFile);
+	while(!feof(inputFile))
+	{
+		printf("%c", c);
+		c = fgetc(inputFile);
+	}
+
+
+
+	fclose(inputFile);
 }
 
 /* Function handles the cp command */
@@ -208,7 +227,7 @@ void command_cp(char userInput[1024])
 {
 	char* token;
 	char tokens[128][256];
-	int numTokens;
+	int numTokens = 0;
 	int i = 0;
 
 	token = strtok(userInput, " ");
@@ -234,7 +253,7 @@ void command_rm(char userInput[1024])
 {
 	char* token;
 	char tokens[128][256];
-	int numTokens;
+	int numTokens = 0;
 	int i = 0;
 
 	token = strtok(userInput, " ");
@@ -260,7 +279,7 @@ void command_mkdir(char userInput[1024])
 {
 	char* token;
 	char tokens[128][256];
-	int numTokens;
+	int numTokens = 0;
 	int i = 0;
 
 	token = strtok(userInput, " ");
@@ -286,7 +305,7 @@ void command_rmdir(char userInput[1024])
 {
 	char* token;
 	char tokens[128][256];
-	int numTokens;
+	int numTokens = 0;
 	int i = 0;
 
 	token = strtok(userInput, " ");
