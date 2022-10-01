@@ -199,7 +199,40 @@ void command_cat(char tokens[128][256], int numTokens)
 /* Function handles the cp command */
 void command_cp(char tokens[128][256], int numTokens)
 {
-	printf("command cp entered\n");
+	FILE *source;
+	FILE *destination;
+	char c;
+
+	/* open source file. Exit function if failed */
+	source = fopen(tokens[1], "rb");
+	if(source == NULL)
+	{
+		printf("Failed to open source file \"%s\"\n", tokens[1]);
+		return;
+	}
+
+	/* open destination file. Close source file and exit function if failed */
+	destination = fopen(tokens[2], "wb");
+	if(destination == NULL)
+	{
+		printf("Failed to open destination file \"%s\"\n", tokens[2]);
+		fclose(source);
+		return;
+	}
+	
+	/* write to destination file character by character until the end of source is reached */
+	c = fgetc(source);
+	while(!feof(source))
+	{
+		fputc(c, destination);
+		c = fgetc(source);
+	}
+
+	
+	printf("\"%s\" successfully copied to \"%s\"\n", tokens[1], tokens[2]);
+
+	fclose(source);
+	fclose(destination);
 }
 
 /* Function handles the rm command */
