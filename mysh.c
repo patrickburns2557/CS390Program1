@@ -207,7 +207,7 @@ void command_cp(char tokens[128][256], int numTokens)
 	source = fopen(tokens[1], "rb");
 	if(source == NULL)
 	{
-		printf("Failed to open source file \"%s\"\n", tokens[1]);
+		printf("Failed to open source file '%s'\n", tokens[1]);
 		return;
 	}
 
@@ -215,7 +215,7 @@ void command_cp(char tokens[128][256], int numTokens)
 	destination = fopen(tokens[2], "wb");
 	if(destination == NULL)
 	{
-		printf("Failed to open destination file \"%s\"\n", tokens[2]);
+		printf("Failed to open destination file '%s'\n", tokens[2]);
 		fclose(source);
 		return;
 	}
@@ -229,7 +229,7 @@ void command_cp(char tokens[128][256], int numTokens)
 	}
 
 	
-	printf("\"%s\" successfully copied to \"%s\"\n", tokens[1], tokens[2]);
+	printf("Successfully copied '%s' to '%s'\n", tokens[1], tokens[2]);
 
 	fclose(source);
 	fclose(destination);
@@ -238,7 +238,15 @@ void command_cp(char tokens[128][256], int numTokens)
 /* Function handles the rm command */
 void command_rm(char tokens[128][256], int numTokens)
 {
-	printf("command rm entered\n");
+	/* remove file and print results of operation */
+	if(remove(tokens[1]) == 0)
+	{
+		printf("Deleted '%s'\n", tokens[1]);
+	}
+	else
+	{
+		printf("Cannot remove '%s' : No such file or directory\n", tokens[1]);
+	}
 }
 
 /* Function handles the mkdir command */
