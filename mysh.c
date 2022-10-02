@@ -108,7 +108,7 @@ int main()
 		else
 		{
 			printf("Invalid command.\n");
-			/*USAGE MESSAGE*/
+			printf("Valid commands: echo, PS1, cat, cp, rm, mkdir, rmdir, exit\n");
 		}
 
 	} while (1);
@@ -182,7 +182,7 @@ void command_cat(char tokens[128][256], int numTokens)
 
 	if ((inputFile = fopen(tokens[1], "r")) == NULL)
 	{
-		printf("File %s not found\n", tokens[1]);
+		printf("File '%s' not found\n", tokens[1]);
 		return;
 	}
 
@@ -269,5 +269,13 @@ void command_mkdir(char tokens[128][256], int numTokens)
 /* Function handles the rmdir command */
 void command_rmdir(char tokens[128][256], int numTokens)
 {
-	
+	/* remove folder and print results of operation */
+	if(remove(tokens[1]) == 0)
+	{
+		printf("Deleted '%s'\n", tokens[1]);
+	}
+	else
+	{
+		printf("Cannot remove '%s' : Either no such directory, or directory is not empty\n", tokens[1]);
+	}
 }
