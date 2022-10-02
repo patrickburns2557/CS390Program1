@@ -32,7 +32,6 @@ char ps1[1024] = "$";
 int main()
 {
 	char userInput[1024];
-	char command[128];
 	char* token;
 	char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH];
 	int numTokens = 0;
@@ -71,8 +70,6 @@ int main()
 		}
 
 
-
-		
 		if (strcmp(tokens[0], "echo") == 0)
 		{
 			command_echo(tokens, numTokens);
@@ -176,16 +173,18 @@ void command_ps1(char tokens[128][256], int numTokens)
 /* Function handles the cat command */
 void command_cat(char tokens[128][256], int numTokens)
 {
-	int i = 0;
 	FILE *inputFile;
+	int i = 0;
 	char c = '0';
 
+	/* Open file. If file not found, exit function */
 	if ((inputFile = fopen(tokens[1], "r")) == NULL)
 	{
 		printf("File '%s' not found\n", tokens[1]);
 		return;
 	}
 
+	/* iterate through entire file and print out its contents character by character */
 	c = fgetc(inputFile);
 	while(!feof(inputFile))
 	{
