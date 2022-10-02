@@ -10,6 +10,7 @@ Program: My Shell
 #include "stdlib.h"
 #include "string.h"
 #include "stdbool.h"
+#include "sys/stat.h"
 #define MAX_TOKENS 32
 #define MAX_TOKEN_LENGTH 256
 
@@ -228,7 +229,6 @@ void command_cp(char tokens[128][256], int numTokens)
 		c = fgetc(source);
 	}
 
-	
 	printf("Successfully copied '%s' to '%s'\n", tokens[1], tokens[2]);
 
 	fclose(source);
@@ -252,11 +252,22 @@ void command_rm(char tokens[128][256], int numTokens)
 /* Function handles the mkdir command */
 void command_mkdir(char tokens[128][256], int numTokens)
 {
-	printf("command mkdir entered\n");
+	/* uses stat call to see if the directory exists or not. If it doesn't, it creates the directory */
+	struct stat st = {0};
+	if (stat(tokens[1], &st) == -1)
+	{
+		mkdir(tokens[1], 0777);
+		printf("Directory created\n");
+	}
+	else
+	{
+		printf("Cannot create directory. Directory already exists\n");
+	}
+	
 }
 
 /* Function handles the rmdir command */
 void command_rmdir(char tokens[128][256], int numTokens)
 {
-	printf("command rmdir entered\n");
+	
 }
